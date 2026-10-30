@@ -1,0 +1,23 @@
+name: build
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q MayaAI-fixed-v2.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
+      - run: gradle --no-daemon :app:assembleDebug
+        working-directory: MayaAI
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          files: MayaAI/app/build/outputs/apk/debug/app-debug.apk
